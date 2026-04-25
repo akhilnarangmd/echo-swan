@@ -1,6 +1,6 @@
 // =============================================
 //  Echo Swan — Intracardiac Pressure Calculator
-//  app.js
+//  app.js  (v2)
 // =============================================
 
 const stored = {
@@ -21,19 +21,19 @@ document.getElementById('tabNav').addEventListener('click', e => {
   if (tabId === 'summary') updateSummary();
 });
 
-// ---- Collapsible section toggle ----
-function toggleSection(sectionId, toggleId) {
-  const section = document.getElementById(sectionId);
-  const toggle = document.getElementById(toggleId);
-  const isOpen = section.classList.contains('open');
-  section.classList.toggle('open', !isOpen);
-  toggle.classList.toggle('open', !isOpen);
+// ---- Collapsible VSD section ----
+function toggleSection(bodyId, chevronId) {
+  const body = document.getElementById(bodyId);
+  const chev = document.getElementById(chevronId);
+  const isOpen = body.style.display !== 'none';
+  body.style.display = isOpen ? 'none' : 'block';
+  chev.classList.toggle('open', !isOpen);
 }
 
-// ---- PS checkbox toggle ----
+// ---- PS checkbox ----
 function togglePS() {
-  const checked = document.getElementById('ps-present').checked;
-  document.getElementById('ps-fields').style.display = checked ? '' : 'none';
+  const checked = document.getElementById('ps-check').checked;
+  document.getElementById('ps-section').style.display = checked ? 'block' : 'none';
   calcPASP();
 }
 
@@ -114,13 +114,10 @@ function showSFF() {
   const sff = parseFloat(document.getElementById('sff').value);
   const el = document.getElementById('sff-result');
   if (isNaN(sff)) { el.innerHTML = ''; el.className = 'result-inline'; return; }
-  if (sff < 55) {
-    el.className = 'result-inline elevated';
-    el.textContent = `SFF ${sff.toFixed(1)}% — RAP likely > 8 mmHg`;
-  } else {
-    el.className = 'result-inline normal';
-    el.textContent = `SFF ${sff.toFixed(1)}% — RAP likely normal`;
-  }
+  el.className = sff < 55 ? 'result-inline elevated' : 'result-inline normal';
+  el.textContent = sff < 55
+    ? `SFF ${sff.toFixed(1)}% — RAP likely > 8 mmHg`
+    : `SFF ${sff.toFixed(1)}% — RAP likely normal`;
 }
 
 // =============================================
@@ -132,31 +129,24 @@ function calcRVSP() {
   const rap = parseFloat(document.getElementById('rap-rvsp').value);
   if (isNaN(v)) { hideResult('rvsp-result'); return; }
   const gradient = +(4 * v * v).toFixed(1);
-  const el = document.getElementById('rvsp-result');
-  el.style.display = '';
-  el.className = 'result-box';
   if (isNaN(rap)) {
-    // RAP not entered — show partial result
+    // Show partial result without RAP
     stored.rvsp = null;
-    el.innerHTML = `
-      <div class="result-label">RV Systolic Pressure</div>
-      <div>
-        <span class="result-value">${gradient}</span>
-        <span class="result-unit">+ RAP mmHg</span>
-      </div>
-      <div class="result-formula">4 × ${v}² = ${gradient} · Enter RAP for full result</div>
-    `;
+    showResult('rvsp-result', {
+      label: 'RVSP (RAP not entered)',
+      value: gradient,
+      unit: '+ RAP  mmHg',
+      formula: `4 × ${v}² = ${gradient} + RAP`
+    });
   } else {
     const val = gradient + rap;
     stored.rvsp = val;
-    el.innerHTML = `
-      <div class="result-label">RV Systolic Pressure</div>
-      <div>
-        <span class="result-value">${fmt(val)}</span>
-        <span class="result-unit">mmHg</span>
-      </div>
-      <div class="result-formula">4 × ${v}² + ${rap} = ${fmt(val)}</div>
-    `;
+    showResult('rvsp-result', {
+      label: 'RV Systolic Pressure',
+      value: fmt(val),
+      unit: 'mmHg',
+      formula: `4 × ${v}² + ${rap} = ${fmt(val)}`
+    });
   }
 }
 
@@ -165,13 +155,13 @@ function calcRVSP_VSD() {
   const v = parseFloat(document.getElementById('vsd-vel').value);
   if (isNaN(sbp) || isNaN(v)) { hideResult('rvsp-vsd-result'); return; }
   const val = sbp - 4 * v * v;
-  if (!stored.rvsp) stored.rvsp = val;
   showResult('rvsp-vsd-result', {
     label: 'RVSP via VSD',
     value: fmt(val),
     unit: 'mmHg',
     formula: `${sbp} − 4×${v}² = ${fmt(val)}`
   });
+  if (!stored.rvsp) stored.rvsp = val;
 }
 
 function calcRVEDP() {
@@ -197,7 +187,7 @@ function calcRVDP() {
     label: 'RV Diastolic Pressure',
     value: fmt(val),
     unit: 'mmHg',
-    formula: ts > 0 ? `RAP(${rap}) − TS gradient(${ts}) = ${fmt(val)}` : `= RAP = ${fmt(val)}`
+    formula: ts > 0 ? `${rap} − ${ts} = ${fmt(val)}` : `= RAP = ${fmt(val)}`
   });
 }
 
@@ -206,111 +196,97 @@ function calcRVDP() {
 // =============================================
 
 function calcPASP() {
-  const rvsp = parseFloat(document.getElementById('rvsp-pa').value);
-  if (isNaN(rvsp)) { hideResult('pasp-result'); return; }
-  const psPresent = document.getElementById('ps-present').checked;
-  const ps = psPresent ? (parseFloat(document.getElementById('ps-grad').value) || 0) : 0;
-  const val = rvsp - ps;
-  stored.pasp = val;
-  showResult('pasp-result', {
-    label: 'PA Systolic Pressure',
-    value: fmt(val),
-    unit: 'mmHg',
-    formula: psPresent && ps > 0 ? `RVSP(${rvsp}) − PS gradient(${ps}) = ${fmt(val)}` : `= RVSP (no pulmonic stenosis)`
-  });
+  const v = parseFloat(document.getElementById('tr-vel-pasp').value);
+  const rap = parseFloat(document.getElementById('rap-pasp').value);
+  const psCheck = document.getElementById('ps-check').checked;
+  const ps = psCheck ? (parseFloat(document.getElementById('ps-grad').value) || 0) : 0;
+
+  if (isNaN(v)) { hideResult('pasp-result'); return; }
+
+  const rvsp = 4 * v * v;
+
+  if (isNaN(rap)) {
+    // No RAP — show partial
+    const partial = +(rvsp - ps).toFixed(1);
+    stored.pasp = null;
+    showResult('pasp-result', {
+      label: 'PASP (RAP not entered)',
+      value: fmt(partial),
+      unit: '+ RAP  mmHg',
+      formula: psCheck
+        ? `4×${v}² − PS(${ps}) = ${fmt(partial)} + RAP`
+        : `4×${v}² = ${fmt(partial)} + RAP`
+    });
+  } else {
+    const val = rvsp + rap - ps;
+    stored.pasp = val;
+    showResult('pasp-result', {
+      label: 'PA Systolic Pressure',
+      value: fmt(val),
+      unit: 'mmHg',
+      formula: psCheck
+        ? `4×${v}² + RAP(${rap}) − PS(${ps}) = ${fmt(val)}`
+        : `4×${v}² + RAP(${rap}) = ${fmt(val)}`
+    });
+  }
 }
 
 function calcPAEDP() {
   const v = parseFloat(document.getElementById('pr-vel').value);
   const rap = parseFloat(document.getElementById('rap-paedp').value);
-  if (isNaN(v)) { hideResult('paedp-result'); return; }
-  const gradient = +(4 * v * v).toFixed(1);
-  const el = document.getElementById('paedp-result');
-  el.style.display = '';
-  el.className = 'result-box';
-  if (isNaN(rap)) {
-    stored.paedp = null;
-    el.innerHTML = `
-      <div class="result-label">PA End-Diastolic Pressure</div>
-      <div>
-        <span class="result-value">${gradient}</span>
-        <span class="result-unit">+ RAP mmHg</span>
-      </div>
-      <div class="result-formula">4 × ${v}² = ${gradient} · Enter RAP for full result</div>
-    `;
-  } else {
-    const val = gradient + rap;
-    stored.paedp = val;
-    el.innerHTML = `
-      <div class="result-label">PA End-Diastolic Pressure</div>
-      <div>
-        <span class="result-value">${fmt(val)}</span>
-        <span class="result-unit">mmHg</span>
-      </div>
-      <div class="result-formula">4×${v}² + ${rap} = ${fmt(val)}</div>
-    `;
-  }
+  if (isNaN(v) || isNaN(rap)) { hideResult('paedp-result'); return; }
+  const val = 4 * v * v + rap;
+  stored.paedp = val;
+  showResult('paedp-result', {
+    label: 'PA End-Diastolic Pressure',
+    value: fmt(val),
+    unit: 'mmHg',
+    formula: `4×${v}² + ${rap} = ${fmt(val)}`
+  });
 }
 
 function calcMPAP() {
   const prPeak = parseFloat(document.getElementById('pr-peak').value);
-  const rap1   = parseFloat(document.getElementById('rap-mpap1').value);
-  const meanDp = parseFloat(document.getElementById('mean-dp').value);
-  const rap2   = parseFloat(document.getElementById('rap-mpap2').value);
-  const act    = parseFloat(document.getElementById('rvot-act').value);
-  const pasp   = parseFloat(document.getElementById('pasp-m4').value);
-  const padp   = parseFloat(document.getElementById('padp-m4').value);
+  const rap1 = parseFloat(document.getElementById('rap-mpap1').value);
+  const meanTR = parseFloat(document.getElementById('mean-tr-grad').value);
+  const rap2 = parseFloat(document.getElementById('rap-mpap2').value);
+  const act = parseFloat(document.getElementById('rvot-act').value);
+  const pasp = parseFloat(document.getElementById('pasp-m4').value);
+  const padp = parseFloat(document.getElementById('padp-m4').value);
 
   const el = document.getElementById('mpap-result');
   const cards = [];
   let first = null;
 
-  // Method 1: 4(PR peak)² + RAP
-  if (!isNaN(prPeak)) {
-    const grad = 4 * prPeak * prPeak;
-    if (!isNaN(rap1)) {
-      const v = grad + rap1;
-      if (first === null) first = v;
-      cards.push({ label: 'Method 1: 4(PR peak)² + RAP', val: fmt(v) });
-    } else {
-      cards.push({ label: 'Method 1: 4(PR peak)² + RAP', val: `${fmt(grad)} + RAP` });
-    }
+  if (!isNaN(prPeak) && !isNaN(rap1)) {
+    const v = 4 * prPeak * prPeak + rap1;
+    if (first === null) first = v;
+    cards.push({ label: 'Method 1: 4(PR peak)² + RAP', val: v });
   }
-
-  // Method 2: MeanΔP(RV-RA) + RAP
-  if (!isNaN(meanDp)) {
-    if (!isNaN(rap2)) {
-      const v = meanDp + rap2;
-      if (first === null) first = v;
-      cards.push({ label: 'Method 2: MeanΔP(RV-RA) + RAP', val: fmt(v) });
-    } else {
-      cards.push({ label: 'Method 2: MeanΔP(RV-RA) + RAP', val: `${fmt(meanDp)} + RAP` });
-    }
+  if (!isNaN(meanTR) && !isNaN(rap2)) {
+    const v = meanTR + rap2;
+    if (first === null) first = v;
+    cards.push({ label: 'Method 2: Mean ΔP(RV-RA) + RAP', val: v });
   }
-
-  // Method 3: 79 − 0.45 × AcT
   if (!isNaN(act)) {
     const v = 79 - 0.45 * act;
     if (first === null) first = v;
-    cards.push({ label: 'Method 3: 79 − 0.45 × AcT', val: fmt(v) });
+    cards.push({ label: 'Method 3: 79 − 0.45×AcT', val: v });
   }
-
-  // Method 4: ⅓PASP + ⅔PADP
   if (!isNaN(pasp) && !isNaN(padp)) {
     const v = pasp / 3 + (padp * 2) / 3;
     if (first === null) first = v;
-    cards.push({ label: 'Method 4: ⅓PASP + ⅔PADP', val: fmt(v) });
+    cards.push({ label: 'Method 4: ⅓PASP + ⅔PADP', val: v });
   }
 
   stored.mpap = first;
 
   if (cards.length === 0) { el.innerHTML = ''; return; }
-
   el.className = 'mpap-results';
   el.innerHTML = cards.map(c => `
     <div class="mpap-card">
       <div class="m-label">${c.label}</div>
-      <div class="m-val">${c.val}</div>
+      <div class="m-val">${fmt(c.val)}</div>
       <div class="m-unit">mmHg</div>
     </div>
   `).join('');
@@ -344,7 +320,7 @@ function calcPVR() {
 function calcPVR2() {
   const mpap = parseFloat(document.getElementById('mpap-pvr').value);
   const pcwp = parseFloat(document.getElementById('pcwp-pvr').value);
-  const co   = parseFloat(document.getElementById('co-pvr').value);
+  const co = parseFloat(document.getElementById('co-pvr').value);
   if (isNaN(mpap) || isNaN(pcwp) || isNaN(co) || co === 0) { hideResult('pvr-fick-result'); return; }
   const val = (mpap - pcwp) / co;
   if (!stored.pvr) stored.pvr = val;
@@ -368,7 +344,7 @@ function calcPVR2() {
 // =============================================
 
 function calcLAP() {
-  const e  = parseFloat(document.getElementById('e-vel').value);
+  const e = parseFloat(document.getElementById('e-vel').value);
   const ep = parseFloat(document.getElementById('eprime').value);
   if (isNaN(e) || isNaN(ep) || ep === 0) { hideResult('lap-result'); return; }
   const ratio = e / ep;
@@ -397,7 +373,7 @@ function calcLAP() {
 
 function calcLAP2() {
   const sbp = parseFloat(document.getElementById('sbp-lap').value);
-  const mr  = parseFloat(document.getElementById('mr-vel').value);
+  const mr = parseFloat(document.getElementById('mr-vel').value);
   if (isNaN(sbp) || isNaN(mr)) { hideResult('lap2-result'); return; }
   const val = sbp - 4 * mr * mr;
   if (!stored.lap) stored.lap = val;
@@ -414,19 +390,25 @@ function calcLAP2() {
 // =============================================
 
 function calcLVSP() {
-  const sbp    = parseFloat(document.getElementById('sbp-lv').value);
-  const mr     = parseFloat(document.getElementById('mr-vel-lv').value);
-  const lap    = parseFloat(document.getElementById('lap-lvsp').value);
+  const sbp = parseFloat(document.getElementById('sbp-lv').value);
+  const mr = parseFloat(document.getElementById('mr-vel-lv').value);
+  const lap = parseFloat(document.getElementById('lap-lvsp').value);
   const asGrad = parseFloat(document.getElementById('as-grad').value) || 0;
+
   const el = document.getElementById('lvsp-result');
   const methods = [];
+
   if (!isNaN(sbp)) {
-    methods.push({ label: asGrad > 0 ? 'BP + AS gradient' : 'From BP (no AS)', val: sbp + asGrad });
+    const v = sbp + asGrad;
+    methods.push({ label: asGrad > 0 ? 'BP + AS gradient' : 'From BP (no AS)', val: v });
   }
   if (!isNaN(mr) && !isNaN(lap)) {
-    methods.push({ label: '4(MR V<sub>peak</sub>)² + LAP', val: 4 * mr * mr + lap });
+    const v = 4 * mr * mr + lap;
+    methods.push({ label: '4(MR V<sub>peak</sub>)² + LAP', val: v });
   }
+
   if (methods.length === 0) { el.style.display = 'none'; return; }
+
   stored.lvsp = methods[0].val;
   el.style.display = '';
   el.className = 'result-box';
@@ -446,7 +428,7 @@ function calcLVSP() {
 
 function calcLVEDP() {
   const dbp = parseFloat(document.getElementById('dbp-lv').value);
-  const ar  = parseFloat(document.getElementById('ar-vel').value);
+  const ar = parseFloat(document.getElementById('ar-vel').value);
   if (isNaN(dbp) || isNaN(ar)) { hideResult('lvedp-result'); return; }
   const val = dbp - 4 * ar * ar;
   stored.lvedp = val;
@@ -460,15 +442,12 @@ function calcLVEDP() {
 
 function calcArA() {
   const dur = parseFloat(document.getElementById('ar-a-dur').value);
-  const el  = document.getElementById('ara-result');
+  const el = document.getElementById('ara-result');
   if (isNaN(dur)) { el.innerHTML = ''; el.className = 'result-inline'; return; }
-  if (dur > 30) {
-    el.className = 'result-inline elevated';
-    el.textContent = `Ar–A ${dur} ms — LVEDP likely > 20 mmHg`;
-  } else {
-    el.className = 'result-inline normal';
-    el.textContent = `Ar–A ${dur} ms — LVEDP likely ≤ 20 mmHg`;
-  }
+  el.className = dur > 30 ? 'result-inline elevated' : 'result-inline normal';
+  el.textContent = dur > 30
+    ? `Ar–A ${dur} ms — LVEDP likely > 20 mmHg`
+    : `Ar–A ${dur} ms — LVEDP likely ≤ 20 mmHg`;
 }
 
 // =============================================
@@ -497,8 +476,7 @@ function updateSummary() {
         <div class="s-label">${item.label}</div>
         <div class="s-val ${hasVal ? 'filled' : 'empty'}">${display}</div>
         <div class="s-unit">${item.unit}</div>
-      </div>
-    `;
+      </div>`;
   }).join('');
 }
 
