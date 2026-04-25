@@ -19,7 +19,6 @@
         <div class="logo-sub">Intracardiac Pressure Calculator</div>
       </div>
     </div>
-    <div class="header-note">Based on ASE guidelines · Bernoulli equation</div>
   </div>
 </header>
 
@@ -90,59 +89,74 @@
       <p>Systolic and diastolic RV pressure estimation</p>
     </div>
     <div class="grid-2">
+
       <div class="card">
         <h3>RVSP via TR</h3>
+        <div class="formula-top">RVSP = 4(TR V<sub>max</sub>)² + RAP</div>
         <div class="field">
           <label>TR peak velocity (m/s)</label>
           <input type="number" id="tr-vel" placeholder="e.g. 3.3" step="0.1" min="0" oninput="calcRVSP()">
         </div>
         <div class="field">
-          <label>RAP (mmHg)</label>
-          <input type="number" id="rap-rvsp" placeholder="from RAP tab" step="1" oninput="calcRVSP()">
+          <label>RAP (mmHg) <span class="optional">optional</span></label>
+          <input type="number" id="rap-rvsp" placeholder="leave blank to show + RAP" step="1" oninput="calcRVSP()">
         </div>
         <div class="result-box" id="rvsp-result" style="display:none"></div>
-        <div class="formula">RVSP = 4(TR V<sub>max</sub>)² + RAP</div>
       </div>
+
       <div class="card">
-        <h3>RVSP via VSD</h3>
-        <div class="field">
-          <label>Systolic BP (mmHg)</label>
-          <input type="number" id="sbp-vsd" placeholder="e.g. 120" step="1" oninput="calcRVSP_VSD()">
-        </div>
-        <div class="field">
-          <label>VSD peak velocity (m/s)</label>
-          <input type="number" id="vsd-vel" placeholder="e.g. 2.9" step="0.1" oninput="calcRVSP_VSD()">
-        </div>
-        <div class="result-box" id="rvsp-vsd-result" style="display:none"></div>
-        <div class="formula">RVSP = SBP − 4(VSD V<sub>peak</sub>)²</div>
-        <p class="caveat">Assumes no LVOT obstruction</p>
-      </div>
-      <div class="card">
-        <h3>RVEDP via VSD</h3>
-        <div class="field">
-          <label>LVEDP (mmHg)</label>
-          <input type="number" id="lvedp-rv" placeholder="mmHg" step="1" oninput="calcRVEDP()">
-        </div>
-        <div class="field">
-          <label>VSD diastolic velocity (m/s)</label>
-          <input type="number" id="vsd-diast" placeholder="e.g. 1.0" step="0.1" oninput="calcRVEDP()">
-        </div>
-        <div class="result-box" id="rvedp-result" style="display:none"></div>
-        <div class="formula">RVEDP = LVEDP − 4(VSD V<sub>diast</sub>)²</div>
-      </div>
-      <div class="card">
-        <h3>RVDP (no VSD)</h3>
+        <h3>RVDP</h3>
+        <div class="formula-top">RVDP = RAP − TS gradient</div>
         <div class="field">
           <label>RAP (mmHg)</label>
           <input type="number" id="rap-rvdp" placeholder="mmHg" step="1" oninput="calcRVDP()">
         </div>
         <div class="field">
-          <label>TS gradient (mmHg) — if tricuspid stenosis</label>
+          <label>TS gradient (mmHg) <span class="optional">optional — if tricuspid stenosis</span></label>
           <input type="number" id="ts-grad" placeholder="0 if no TS" step="1" value="0" oninput="calcRVDP()">
         </div>
         <div class="result-box" id="rvdp-result" style="display:none"></div>
-        <div class="formula">RVDP = RAP − TS gradient</div>
       </div>
+
+      <div class="card wide">
+        <button class="expand-toggle" id="vsd-toggle" onclick="toggleSection('vsd-section','vsd-toggle')">
+          <span class="expand-icon" id="vsd-icon">▶</span>
+          <span class="expand-title">VSD Special Calculations</span>
+          <span class="expand-sub">RVSP and RVEDP when VSD is present — click to expand</span>
+        </button>
+        <div class="expand-section" id="vsd-section">
+          <div class="grid-2" style="margin-top:1.25rem;">
+            <div>
+              <h4>RVSP via VSD</h4>
+              <div class="formula-top">RVSP = SBP − 4(VSD V<sub>peak</sub>)²</div>
+              <div class="field">
+                <label>Systolic BP (mmHg)</label>
+                <input type="number" id="sbp-vsd" placeholder="e.g. 120" step="1" oninput="calcRVSP_VSD()">
+              </div>
+              <div class="field">
+                <label>VSD peak velocity (m/s)</label>
+                <input type="number" id="vsd-vel" placeholder="e.g. 2.9" step="0.1" oninput="calcRVSP_VSD()">
+              </div>
+              <div class="result-box" id="rvsp-vsd-result" style="display:none"></div>
+              <p class="caveat">Assumes no LVOT obstruction</p>
+            </div>
+            <div>
+              <h4>RVEDP via VSD</h4>
+              <div class="formula-top">RVEDP = LVEDP − 4(VSD V<sub>diast</sub>)²</div>
+              <div class="field">
+                <label>LVEDP (mmHg)</label>
+                <input type="number" id="lvedp-rv" placeholder="mmHg" step="1" oninput="calcRVEDP()">
+              </div>
+              <div class="field">
+                <label>VSD diastolic velocity (m/s)</label>
+                <input type="number" id="vsd-diast" placeholder="e.g. 1.0" step="0.1" oninput="calcRVEDP()">
+              </div>
+              <div class="result-box" id="rvedp-result" style="display:none"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -153,70 +167,95 @@
       <p>PASP, PAEDP, and mean PA pressure</p>
     </div>
     <div class="grid-2">
+
       <div class="card">
         <h3>PA Systolic Pressure (PASP)</h3>
+        <div class="formula-top">PASP = RVSP (if no PS)</div>
         <div class="field">
           <label>RVSP (mmHg)</label>
           <input type="number" id="rvsp-pa" placeholder="from RV tab" step="1" oninput="calcPASP()">
         </div>
-        <div class="field">
-          <label>PS gradient (mmHg) — if pulmonic stenosis</label>
-          <input type="number" id="ps-grad" placeholder="0 if no PS" step="1" value="0" oninput="calcPASP()">
+        <div class="checkbox-row">
+          <label class="checkbox-label">
+            <input type="checkbox" id="ps-present" onchange="togglePS()">
+            Pulmonic stenosis present
+          </label>
+        </div>
+        <div id="ps-fields" style="display:none">
+          <div class="formula-top" style="margin-bottom:0.5rem;">PASP = RVSP − PS<sub>gradient</sub></div>
+          <div class="field">
+            <label>PS gradient (mmHg)</label>
+            <input type="number" id="ps-grad" placeholder="mmHg" step="1" oninput="calcPASP()">
+          </div>
         </div>
         <div class="result-box" id="pasp-result" style="display:none"></div>
-        <div class="formula">PASP = RVSP (no PS) <br>PASP = RVSP − PS<sub>gradient</sub></div>
       </div>
+
       <div class="card">
         <h3>PA End-Diastolic Pressure (PAEDP)</h3>
+        <div class="formula-top">PAEDP = 4(PR<sub>end-diast</sub>)² + RAP</div>
         <div class="field">
           <label>PR end-diastolic velocity (m/s)</label>
           <input type="number" id="pr-vel" placeholder="e.g. 1.1" step="0.1" oninput="calcPAEDP()">
         </div>
         <div class="field">
-          <label>RAP (mmHg)</label>
-          <input type="number" id="rap-paedp" placeholder="mmHg" step="1" oninput="calcPAEDP()">
+          <label>RAP (mmHg) <span class="optional">optional</span></label>
+          <input type="number" id="rap-paedp" placeholder="leave blank to show + RAP" step="1" oninput="calcPAEDP()">
         </div>
         <div class="result-box" id="paedp-result" style="display:none"></div>
-        <div class="formula">PAEDP = 4(PR<sub>end-diast</sub>)² + RAP</div>
       </div>
+
       <div class="card wide">
-        <h3>Mean PA Pressure (mPAP) — Three Methods</h3>
-        <div class="grid-3">
+        <h3>Mean PA Pressure (mPAP) — Four Methods</h3>
+        <div class="grid-4">
           <div>
-            <h4>Method 1 — Weighted</h4>
-            <div class="field">
-              <label>PASP (mmHg)</label>
-              <input type="number" id="pasp-m1" placeholder="mmHg" step="1" oninput="calcMPAP()">
-            </div>
-            <div class="field">
-              <label>PADP (mmHg)</label>
-              <input type="number" id="padp-m1" placeholder="mmHg" step="1" oninput="calcMPAP()">
-            </div>
-            <div class="formula">mPAP = ⅓PASP + ⅔PADP</div>
-          </div>
-          <div>
-            <h4>Method 2 — PR peak</h4>
+            <h4>Method 1 — PR peak</h4>
+            <div class="formula-top">mPAP = 4(PR<sub>peak</sub>)² + RAP</div>
             <div class="field">
               <label>PR peak velocity (m/s)</label>
               <input type="number" id="pr-peak" placeholder="e.g. 1.5" step="0.1" oninput="calcMPAP()">
             </div>
             <div class="field">
-              <label>RAP (mmHg)</label>
-              <input type="number" id="rap-mpap2" placeholder="mmHg" step="1" oninput="calcMPAP()">
+              <label>RAP (mmHg) <span class="optional">optional</span></label>
+              <input type="number" id="rap-mpap1" placeholder="optional" step="1" oninput="calcMPAP()">
             </div>
-            <div class="formula">mPAP = 4(PR<sub>peak</sub>)² + RAP</div>
+          </div>
+          <div>
+            <h4>Method 2 — Mean ΔP</h4>
+            <div class="formula-top">mPAP = MeanΔP<sub>(RV-RA)</sub> + RAP</div>
+            <div class="field">
+              <label>Mean ΔP RV-RA (mmHg)</label>
+              <input type="number" id="mean-dp" placeholder="mmHg" step="0.1" oninput="calcMPAP()">
+            </div>
+            <div class="field">
+              <label>RAP (mmHg) <span class="optional">optional</span></label>
+              <input type="number" id="rap-mpap2" placeholder="optional" step="1" oninput="calcMPAP()">
+            </div>
           </div>
           <div>
             <h4>Method 3 — RVOT AcT</h4>
+            <div class="formula-top">mPAP = 79 − (0.45 × RVOT AcT)</div>
             <div class="field">
               <label>RVOT acceleration time (ms)</label>
               <input type="number" id="rvot-act" placeholder="ms" step="1" oninput="calcMPAP()">
             </div>
-            <div class="formula">mPAP = 79 − (0.45 × RVOT AcT)</div>
+          </div>
+          <div>
+            <h4>Method 4 — Weighted</h4>
+            <div class="formula-top">mPAP = ⅓PASP + ⅔PADP</div>
+            <div class="field">
+              <label>PASP (mmHg)</label>
+              <input type="number" id="pasp-m4" placeholder="mmHg" step="1" oninput="calcMPAP()">
+            </div>
+            <div class="field">
+              <label>PADP (mmHg)</label>
+              <input type="number" id="padp-m4" placeholder="mmHg" step="1" oninput="calcMPAP()">
+            </div>
           </div>
         </div>
         <div class="mpap-results" id="mpap-result"></div>
       </div>
+
     </div>
   </section>
 
@@ -229,6 +268,7 @@
     <div class="grid-2">
       <div class="card">
         <h3>Echo Method <span class="method-badge">Abbas JACC 2003</span></h3>
+        <div class="formula-top">PVR = 10 × (TR V<sub>peak</sub> / RVOT VTI) + 0.16</div>
         <div class="field">
           <label>TR peak systolic velocity (m/s)</label>
           <input type="number" id="tr-pvr" placeholder="e.g. 2.9" step="0.1" oninput="calcPVR()">
@@ -238,10 +278,10 @@
           <input type="number" id="rvot-vti" placeholder="e.g. 20" step="0.1" oninput="calcPVR()">
         </div>
         <div class="result-box" id="pvr-echo-result" style="display:none"></div>
-        <div class="formula">PVR = 10 × (TR V<sub>peak</sub> / RVOT VTI) + 0.16</div>
       </div>
       <div class="card">
         <h3>Hemodynamic Method</h3>
+        <div class="formula-top">PVR = (mPAP − mPCWP) / CO</div>
         <div class="field">
           <label>Mean PAP (mmHg)</label>
           <input type="number" id="mpap-pvr" placeholder="mmHg" step="1" oninput="calcPVR2()">
@@ -255,7 +295,6 @@
           <input type="number" id="co-pvr" placeholder="L/min" step="0.1" oninput="calcPVR2()">
         </div>
         <div class="result-box" id="pvr-fick-result" style="display:none"></div>
-        <div class="formula">PVR = (mPAP − mPCWP) / CO</div>
       </div>
     </div>
   </section>
@@ -269,20 +308,21 @@
     <div class="grid-2">
       <div class="card">
         <h3>E/e' Method</h3>
+        <div class="formula-top">LAP = E/e' + 4 &nbsp;·&nbsp; LAP = 1.24 × (E/e') + 1.9</div>
         <div class="field">
           <label>E velocity (cm/s)</label>
           <input type="number" id="e-vel" placeholder="cm/s" step="1" oninput="calcLAP()">
         </div>
         <div class="field">
-          <label>e' average — septal + lateral / 2 (cm/s)</label>
+          <label>e' average — (septal + lateral) / 2 (cm/s)</label>
           <input type="number" id="eprime" placeholder="cm/s" step="0.1" oninput="calcLAP()">
         </div>
         <div class="result-box" id="lap-result" style="display:none"></div>
-        <div class="formula">LAP = E/e' + 4<br>LAP = 1.24 × (E/e') + 1.9</div>
         <p class="caveat">⚠ Inaccurate in MS, MAC, prosthetic MV, severe MR, severe LV dysfunction (HCM)</p>
       </div>
       <div class="card">
         <h3>MR Method</h3>
+        <div class="formula-top">LAP = SBP − 4(MR V<sub>max</sub>)²</div>
         <div class="field">
           <label>Systolic BP (mmHg)</label>
           <input type="number" id="sbp-lap" placeholder="e.g. 120" step="1" oninput="calcLAP2()">
@@ -292,7 +332,6 @@
           <input type="number" id="mr-vel" placeholder="e.g. 5.0" step="0.1" oninput="calcLAP2()">
         </div>
         <div class="result-box" id="lap2-result" style="display:none"></div>
-        <div class="formula">LAP = SBP − 4(MR V<sub>max</sub>)²</div>
       </div>
     </div>
   </section>
@@ -306,27 +345,28 @@
     <div class="grid-2">
       <div class="card">
         <h3>LV Systolic Pressure (LVSP)</h3>
+        <div class="formula-top">LVSP = SBP &nbsp;·&nbsp; LVSP = 4(MR V<sub>peak</sub>)² + LAP &nbsp;·&nbsp; LVSP = SBP + AS gradient</div>
         <div class="field">
           <label>Systolic BP (mmHg)</label>
           <input type="number" id="sbp-lv" placeholder="mmHg" step="1" oninput="calcLVSP()">
         </div>
         <div class="field">
-          <label>MR peak velocity (m/s) — if MR present</label>
-          <input type="number" id="mr-vel-lv" placeholder="optional" step="0.1" oninput="calcLVSP()">
+          <label>MR peak velocity (m/s) <span class="optional">optional</span></label>
+          <input type="number" id="mr-vel-lv" placeholder="if MR present" step="0.1" oninput="calcLVSP()">
         </div>
         <div class="field">
-          <label>LAP (mmHg) — required for MR method</label>
-          <input type="number" id="lap-lvsp" placeholder="optional" step="1" oninput="calcLVSP()">
+          <label>LAP (mmHg) <span class="optional">optional — required for MR method</span></label>
+          <input type="number" id="lap-lvsp" placeholder="from LAP tab" step="1" oninput="calcLVSP()">
         </div>
         <div class="field">
-          <label>AS / LVOT gradient (mmHg)</label>
+          <label>AS / LVOT gradient (mmHg) <span class="optional">optional</span></label>
           <input type="number" id="as-grad" placeholder="0 if none" step="1" value="0" oninput="calcLVSP()">
         </div>
         <div class="result-box" id="lvsp-result" style="display:none"></div>
-        <div class="formula">LVSP = SBP (no AS)<br>LVSP = 4(MR V<sub>peak</sub>)² + LAP<br>LVSP = SBP + AS gradient</div>
       </div>
       <div class="card">
         <h3>LV End-Diastolic Pressure (LVEDP)</h3>
+        <div class="formula-top">LVEDP = DBP − 4(AR<sub>end-diast</sub>)²</div>
         <div class="field">
           <label>Diastolic BP (mmHg)</label>
           <input type="number" id="dbp-lv" placeholder="mmHg" step="1" oninput="calcLVEDP()">
@@ -336,15 +376,15 @@
           <input type="number" id="ar-vel" placeholder="e.g. 3.3" step="0.1" oninput="calcLVEDP()">
         </div>
         <div class="result-box" id="lvedp-result" style="display:none"></div>
-        <div class="formula">LVEDP = DBP − 4(AR<sub>end-diast</sub>)²</div>
         <hr class="divider">
         <h4 style="margin: 1rem 0 0.5rem">Ar–A Duration Method</h4>
+        <div class="formula-top">Ar–A &gt; 30 ms → LVEDP &gt; 20 mmHg</div>
         <div class="field">
           <label>Ar–A duration (ms)</label>
           <input type="number" id="ar-a-dur" placeholder="ms" step="1" oninput="calcArA()">
         </div>
         <div class="result-inline" id="ara-result"></div>
-        <p class="caveat">Ar–A &gt; 30 ms → LVEDP &gt; 20 mmHg (82% sens, 92% spec)</p>
+        <p class="caveat">82% sensitivity · 92% specificity</p>
       </div>
     </div>
   </section>
@@ -364,8 +404,8 @@
 
 <footer class="site-footer">
   <div class="footer-inner">
-    <span>Echo Swan · Echocardiographic pressure estimation</span>
-    <span>ASE guidelines · Narang et al.</span>
+    <span>Echo Swan · Echocardiographic Pressure Estimation</span>
+    <span>Created by: Akhil Narang, MD</span>
   </div>
 </footer>
 

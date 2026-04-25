@@ -8,7 +8,6 @@
   --ink-3: #8A837A;
   --red: #C0392B;
   --red-light: #FDECEA;
-  --red-mid: #E8B4B0;
   --green: #2E7D50;
   --green-light: #EAF4EE;
   --amber: #B05D10;
@@ -86,13 +85,6 @@ body {
   margin-top: 1px;
 }
 
-.header-note {
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.45);
-  letter-spacing: 0.04em;
-  text-align: right;
-}
-
 /* ===== Main Layout ===== */
 .container {
   max-width: 1100px;
@@ -129,11 +121,7 @@ body {
 }
 
 .tab-btn:hover { background: var(--cream); color: var(--ink); }
-
-.tab-btn.active {
-  background: var(--ink);
-  color: white;
-}
+.tab-btn.active { background: var(--ink); color: white; }
 
 /* ===== Tab Panels ===== */
 .tab-panel { display: none; }
@@ -145,9 +133,7 @@ body {
 }
 
 /* ===== Panel Header ===== */
-.panel-header {
-  margin-bottom: 1.25rem;
-}
+.panel-header { margin-bottom: 1.25rem; }
 
 .panel-header h2 {
   font-family: var(--font-display);
@@ -173,16 +159,20 @@ body {
   gap: 1rem;
 }
 
-.grid-3 {
+.grid-4 {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
   gap: 1.25rem;
 }
 
 .wide { grid-column: 1 / -1; }
 
+@media (max-width: 900px) {
+  .grid-4 { grid-template-columns: 1fr 1fr; }
+}
+
 @media (max-width: 720px) {
-  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+  .grid-2, .grid-4 { grid-template-columns: 1fr; }
   .wide { grid-column: 1; }
 }
 
@@ -194,7 +184,6 @@ body {
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
-  gap: 0;
 }
 
 .card h3 {
@@ -202,7 +191,7 @@ body {
   font-size: 1.1rem;
   font-weight: 400;
   color: var(--ink);
-  margin-bottom: 1rem;
+  margin-bottom: 0.6rem;
   padding-bottom: 0.6rem;
   border-bottom: 1px solid var(--border);
   display: flex;
@@ -217,7 +206,7 @@ body {
   color: var(--ink-2);
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
 }
 
 .card-desc {
@@ -226,10 +215,21 @@ body {
   margin-bottom: 0.75rem;
 }
 
-/* ===== Form Elements ===== */
-.field {
-  margin-bottom: 0.85rem;
+/* ===== Formula at top ===== */
+.formula-top {
+  font-size: 0.95rem;
+  font-style: italic;
+  color: var(--blue);
+  background: var(--blue-light);
+  border-left: 3px solid var(--blue);
+  padding: 0.45rem 0.75rem;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 1rem;
+  line-height: 1.5;
 }
+
+/* ===== Form Elements ===== */
+.field { margin-bottom: 0.85rem; }
 
 .field label {
   display: block;
@@ -259,6 +259,7 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%238A837A' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
+  background-color: var(--cream);
   padding-right: 2rem;
 }
 
@@ -278,6 +279,92 @@ body {
   gap: 0.75rem;
 }
 
+.optional {
+  font-weight: 400;
+  font-style: italic;
+  color: var(--ink-3);
+  font-size: 0.72rem;
+}
+
+/* ===== Checkbox row ===== */
+.checkbox-row {
+  margin-bottom: 0.85rem;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink-2);
+  cursor: pointer;
+  padding: 0.5rem 0.75rem;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+}
+
+.checkbox-label:hover { background: #f0ebe4; }
+
+.checkbox-label input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--blue);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+/* ===== Expandable section ===== */
+.expand-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--cream);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  font-family: var(--font-body);
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.expand-toggle:hover { background: #f0ebe4; }
+
+.expand-toggle.open { background: var(--blue-light); border-color: var(--blue); }
+
+.expand-icon {
+  font-size: 0.7rem;
+  color: var(--ink-3);
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.expand-toggle.open .expand-icon { transform: rotate(90deg); }
+
+.expand-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+.expand-sub {
+  font-size: 0.75rem;
+  color: var(--ink-3);
+  margin-left: auto;
+}
+
+.expand-section {
+  display: none;
+}
+
+.expand-section.open {
+  display: block;
+}
+
 /* ===== Result Boxes ===== */
 .result-box {
   margin: 0.75rem 0;
@@ -287,20 +374,9 @@ body {
   background: var(--blue-light);
 }
 
-.result-box.normal {
-  border-color: var(--green);
-  background: var(--green-light);
-}
-
-.result-box.intermediate {
-  border-color: var(--amber);
-  background: var(--amber-light);
-}
-
-.result-box.elevated {
-  border-color: var(--red);
-  background: var(--red-light);
-}
+.result-box.normal { border-color: var(--green); background: var(--green-light); }
+.result-box.intermediate { border-color: var(--amber); background: var(--amber-light); }
+.result-box.elevated { border-color: var(--red); background: var(--red-light); }
 
 .result-label {
   font-size: 0.72rem;
@@ -331,19 +407,6 @@ body {
   font-style: italic;
 }
 
-.result-status {
-  display: inline-block;
-  padding: 0.15rem 0.6rem;
-  border-radius: 99px;
-  font-size: 0.72rem;
-  font-weight: 500;
-  margin-top: 0.5rem;
-}
-
-.result-status.normal { background: var(--green); color: white; }
-.result-status.intermediate { background: var(--amber); color: white; }
-.result-status.elevated { background: var(--red); color: white; }
-
 .result-inline {
   font-size: 0.88rem;
   font-weight: 500;
@@ -359,9 +422,12 @@ body {
 .mpap-results {
   margin-top: 1rem;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.75rem;
 }
+
+@media (max-width: 900px) { .mpap-results { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 600px) { .mpap-results { grid-template-columns: 1fr; } }
 
 .mpap-card {
   background: var(--cream);
@@ -371,32 +437,11 @@ body {
   text-align: center;
 }
 
-.mpap-card .m-label {
-  font-size: 0.7rem;
-  color: var(--ink-3);
-  margin-bottom: 0.25rem;
-}
+.mpap-card .m-label { font-size: 0.7rem; color: var(--ink-3); margin-bottom: 0.25rem; }
+.mpap-card .m-val { font-family: var(--font-display); font-size: 1.6rem; }
+.mpap-card .m-unit { font-size: 0.72rem; color: var(--ink-3); }
 
-.mpap-card .m-val {
-  font-family: var(--font-display);
-  font-size: 1.6rem;
-}
-
-.mpap-card .m-unit {
-  font-size: 0.72rem;
-  color: var(--ink-3);
-}
-
-/* ===== Formula display ===== */
-.formula {
-  font-size: 0.78rem;
-  color: var(--ink-3);
-  font-style: italic;
-  margin-top: auto;
-  padding-top: 0.75rem;
-  line-height: 1.6;
-}
-
+/* ===== Method badge ===== */
 .method-badge {
   font-family: var(--font-body);
   font-size: 0.65rem;
@@ -425,6 +470,20 @@ body {
   border-top: 1px solid var(--border);
   margin: 1rem 0;
 }
+
+/* ===== PVR badge ===== */
+.pvr-badge {
+  display: inline-block;
+  padding: 0.2rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.72rem;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.pvr-badge.normal { background: var(--green); color: white; }
+.pvr-badge.borderline { background: var(--amber); color: white; }
+.pvr-badge.elevated { background: var(--red); color: white; }
 
 /* ===== Summary Grid ===== */
 .summary-grid {
@@ -463,12 +522,7 @@ body {
 
 .summary-card .s-val.filled { color: var(--blue); }
 .summary-card .s-val.empty { color: var(--border); }
-
-.summary-card .s-unit {
-  font-size: 0.72rem;
-  color: var(--ink-3);
-  margin-top: 0.2rem;
-}
+.summary-card .s-unit { font-size: 0.72rem; color: var(--ink-3); margin-top: 0.2rem; }
 
 /* ===== Disclaimer ===== */
 .disclaimer {
@@ -504,29 +558,14 @@ body {
   color: var(--ink-3);
 }
 
-/* ===== PVR badge ===== */
-.pvr-badge {
-  display: inline-block;
-  padding: 0.2rem 0.75rem;
-  border-radius: 99px;
-  font-size: 0.72rem;
-  font-weight: 500;
-  margin-top: 0.5rem;
-}
-
-.pvr-badge.normal { background: var(--green); color: white; }
-.pvr-badge.borderline { background: var(--amber); color: white; }
-.pvr-badge.elevated { background: var(--red); color: white; }
-
 /* ===== Responsive ===== */
 @media (max-width: 600px) {
   .header-inner { flex-direction: column; gap: 0.25rem; }
-  .header-note { text-align: left; }
   .logo-title { font-size: 1.1rem; }
   .tab-btn { font-size: 0.72rem; padding: 0.4rem 0.5rem; }
   .panel-header h2 { font-size: 1.4rem; }
   .result-value { font-size: 1.8rem; }
-  .mpap-results { grid-template-columns: 1fr; }
   .field-row { grid-template-columns: 1fr; }
   .footer-inner { flex-direction: column; text-align: center; }
+  .expand-sub { display: none; }
 }
