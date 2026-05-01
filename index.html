@@ -4,406 +4,442 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Echo Swan — Intracardiac Pressure Calculator</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f4f8; color: #1a202c; min-height: 100vh; line-height: 1.6; }
+  header { background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; padding: 24px 20px; text-align: center; }
+  header .icon { font-size: 2rem; margin-bottom: 6px; }
+  header h1 { font-size: 1.6rem; font-weight: 700; letter-spacing: -0.01em; margin-bottom: 2px; }
+  header p { font-size: 0.85rem; opacity: 0.8; }
+  .main-nav { background: white; border-bottom: 2px solid #e2e8f0; display: flex; justify-content: center; overflow-x: auto; padding: 14px 20px; gap: 8px; flex-wrap: wrap; }
+  .tab-btn { padding: 9px 18px; border: 2px solid #cbd5e0; background: white; border-radius: 8px; font-size: 0.85rem; font-weight: 700; color: #718096; cursor: pointer; white-space: nowrap; transition: all 0.2s; font-family: inherit; }
+  .tab-btn.active { background: #1a365d; border-color: #1a365d; color: white; box-shadow: 0 2px 8px rgba(26,54,93,0.25); }
+  .tab-btn:hover:not(.active) { border-color: #2b6cb0; color: #2b6cb0; background: #ebf8ff; }
+  .content { max-width: 1000px; margin: 0 auto; padding: 24px 16px 60px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 680px) { .grid-2 { grid-template-columns: 1fr; } }
+  .wide { grid-column: 1 / -1; }
+  .card { background: white; border-radius: 10px; border: 1px solid #e2e8f0; box-shadow: 0 1px 3px rgba(0,0,0,0.06); padding: 20px; }
+  .card h3 { font-size: 0.97rem; font-weight: 700; color: #1a365d; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid #e2e8f0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .card h4 { font-size: 0.78rem; font-weight: 700; color: #2d3748; text-transform: uppercase; letter-spacing: 0.05em; margin: 14px 0 8px; }
+  .panel-header { margin-bottom: 20px; }
+  .panel-header h2 { font-size: 1.3rem; font-weight: 700; color: #1a365d; }
+  .panel-header h2 .abbr { color: #718096; font-size: 1rem; font-weight: 400; font-style: italic; }
+  .panel-header p { font-size: 0.85rem; color: #718096; margin-top: 4px; }
+  .card-desc { font-size: 0.8rem; color: #718096; margin-bottom: 10px; }
+  .method-badge { font-family: inherit; font-size: 0.65rem; font-weight: 400; background: #f0f4f8; border: 1px solid #e2e8f0; color: #718096; padding: 2px 8px; border-radius: 999px; }
+  .formula-top { background: #ebf8ff; border: 1px solid #bee3f8; border-left: 3px solid #2b6cb0; border-radius: 0 6px 6px 0; padding: 10px 12px; margin-bottom: 14px; font-size: 0.82rem; color: #2c5282; font-style: italic; line-height: 1.8; }
+  .field { margin-bottom: 12px; }
+  .field label { display: block; font-size: 0.8rem; font-weight: 600; color: #2d3748; margin-bottom: 4px; letter-spacing: 0.02em; }
+  .optional { font-weight: 400; color: #a0aec0; font-style: italic; font-size: 0.72rem; }
+  .field input, .field select { width: 100%; padding: 8px 12px; border: 1.5px solid #cbd5e0; border-radius: 7px; background: #f7fafc; color: #1a202c; font-family: 'SF Mono','Fira Code',monospace; font-size: 0.9rem; outline: none; transition: border-color 0.15s; -webkit-appearance: none; appearance: none; }
+  .field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23718096' d='M6 8L0 0h12z'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 10px center; background-color: #f7fafc; padding-right: 32px; }
+  .field input:focus, .field select:focus { border-color: #2b6cb0; background: white; box-shadow: 0 0 0 3px rgba(43,108,176,0.1); }
+  .field input::placeholder { color: #a0aec0; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .checkbox-toggle { margin: 10px 0 4px; }
+  .toggle-label { display: flex; align-items: center; gap: 8px; font-size: 0.85rem; font-weight: 600; color: #2d3748; cursor: pointer; user-select: none; }
+  .toggle-label input[type="checkbox"] { width: 16px; height: 16px; accent-color: #2b6cb0; cursor: pointer; flex-shrink: 0; }
+  .collapsible-header { display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .collapsible-header:hover h3 { color: #2b6cb0; }
+  .chevron { font-size: 0.75rem; color: #718096; transition: transform 0.2s; }
+  .chevron.open { transform: rotate(90deg); }
+  .result-box { margin: 12px 0 4px; padding: 14px 16px; border-radius: 8px; border-left: 4px solid #2b6cb0; background: #ebf8ff; }
+  .result-box.normal { border-color: #276749; background: #f0fff4; }
+  .result-box.intermediate { border-color: #744210; background: #fffaf0; }
+  .result-box.elevated { border-color: #742a2a; background: #fff5f5; }
+  .result-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: #4a5568; margin-bottom: 4px; }
+  .result-value { font-size: 2.4rem; font-weight: 700; color: #1a365d; line-height: 1; font-family: 'SF Mono','Fira Code',monospace; }
+  .result-unit { font-size: 0.85rem; color: #718096; margin-left: 4px; }
+  .result-formula { font-size: 0.72rem; color: #718096; margin-top: 6px; font-style: italic; }
+  .result-inline { font-size: 0.88rem; font-weight: 600; padding: 8px 12px; border-radius: 7px; margin: 8px 0; display: block; }
+  .result-inline.normal { background: #f0fff4; color: #276749; }
+  .result-inline.elevated { background: #fff5f5; color: #742a2a; }
+  .mpap-results { margin-top: 14px; display: grid; grid-template-columns: repeat(4,1fr); gap: 10px; }
+  @media (max-width: 700px) { .mpap-results { grid-template-columns: 1fr 1fr; } }
+  .mpap-card { background: #f0f4f8; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px; text-align: center; }
+  .mpap-card .m-label { font-size: 0.68rem; color: #718096; margin-bottom: 4px; line-height: 1.3; }
+  .mpap-card .m-val { font-size: 1.6rem; font-weight: 700; color: #1a365d; font-family: 'SF Mono','Fira Code',monospace; line-height: 1; }
+  .mpap-card .m-unit { font-size: 0.7rem; color: #718096; margin-top: 2px; }
+  .pvr-badge { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 0.72rem; font-weight: 700; margin-top: 6px; }
+  .pvr-badge.normal { background: #276749; color: white; }
+  .pvr-badge.borderline { background: #744210; color: white; }
+  .pvr-badge.elevated { background: #742a2a; color: white; }
+  .summary-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; margin-bottom: 20px; }
+  .summary-card { background: white; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+  .summary-card .s-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; color: #a0aec0; margin-bottom: 4px; }
+  .summary-card .s-val { font-size: 2rem; font-weight: 700; line-height: 1; font-family: 'SF Mono','Fira Code',monospace; }
+  .summary-card .s-val.filled { color: #2b6cb0; }
+  .summary-card .s-val.empty { color: #e2e8f0; }
+  .summary-card .s-unit { font-size: 0.7rem; color: #718096; margin-top: 2px; }
+  .caveat { font-size: 0.75rem; color: #744210; margin-top: 10px; font-style: italic; line-height: 1.5; }
+  .divider { border: none; border-top: 1px solid #e2e8f0; margin: 14px 0; }
+  .disclaimer { background: #fffaf0; border: 1px solid #fbd38d; border-radius: 8px; padding: 12px 16px; font-size: 0.77rem; color: #744210; margin-top: 20px; }
+  footer { text-align: center; padding: 18px; font-size: 0.77rem; color: #718096; border-top: 1px solid #e2e8f0; background: white; margin-top: 32px; }
+</style>
 </head>
 <body>
 
-<header class="site-header">
-  <div class="header-inner">
-    <div class="logo">
-      <span class="logo-icon">♥</span>
-      <div>
-        <div class="logo-title">Echo Swan</div>
-        <div class="logo-sub">Intracardiac Pressure Calculator</div>
-      </div>
-    </div>
-  </div>
+<header>
+  <div class="icon">🫀</div>
+  <h1>Echo Swan</h1>
+  <p>Intracardiac Pressure Calculator</p>
 </header>
 
-<main class="container">
-  <nav class="tab-nav" id="tabNav">
-    <button class="tab-btn active" data-tab="rap">RAP</button>
-    <button class="tab-btn" data-tab="rv">RV Pressures</button>
-    <button class="tab-btn" data-tab="pa">PA Pressures</button>
-    <button class="tab-btn" data-tab="pvr">PVR</button>
-    <button class="tab-btn" data-tab="lap">LAP</button>
-    <button class="tab-btn" data-tab="lv">LV Pressures</button>
-    <button class="tab-btn" data-tab="summary">Summary</button>
-  </nav>
+<nav class="main-nav" id="tabNav">
+  <button class="tab-btn active" data-tab="rap">RAP</button>
+  <button class="tab-btn" data-tab="rv">RV Pressures</button>
+  <button class="tab-btn" data-tab="pa">PA Pressures</button>
+  <button class="tab-btn" data-tab="pvr">PVR</button>
+  <button class="tab-btn" data-tab="lap">LAP</button>
+  <button class="tab-btn" data-tab="lv">LV Pressures</button>
+  <button class="tab-btn" data-tab="summary">Summary</button>
+</nav>
 
-  <!-- ===== RAP ===== -->
-  <section class="tab-panel active" id="tab-rap">
-    <div class="panel-header">
-      <h2>Right Atrial Pressure <span class="abbr">(RAP)</span></h2>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <h3>IVC Assessment</h3>
-        <div class="formula-top">RAP estimated from IVC diameter and collapsibility</div>
-        <div class="field">
-          <label>IVC diameter</label>
-          <select id="ivc-diam" onchange="calcRAP()">
-            <option value="small">≤ 2.1 cm</option>
-            <option value="large">&gt; 2.1 cm</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Collapse with sniff</label>
-          <select id="ivc-collapse" onchange="calcRAP()">
-            <option value="gt50">&gt; 50%</option>
-            <option value="lt50">&lt; 50%</option>
-          </select>
-        </div>
-        <div class="result-box" id="rap-result"></div>
-        <p class="caveat">⚠ Unreliable in ventilated patients, athletes, severe TR</p>
-      </div>
-      <div class="card">
-        <h3>Hepatic Vein Alternative</h3>
-        <div class="formula-top">SFF = S-VTI / (S-VTI + D-VTI) · SFF &lt; 55% → RAP &gt; 8 mmHg</div>
-        <p class="card-desc">Calculate SFF from wave VTIs or enter directly.</p>
-        <div class="field-row">
-          <div class="field">
-            <label>S-wave VTI (cm)</label>
-            <input type="number" id="s-vti" placeholder="cm" step="0.1" min="0" oninput="calcSFF()">
-          </div>
-          <div class="field">
-            <label>D-wave VTI (cm)</label>
-            <input type="number" id="d-vti" placeholder="cm" step="0.1" min="0" oninput="calcSFF()">
-          </div>
-        </div>
-        <div class="field">
-          <label>Systolic Filling Fraction (SFF %)</label>
-          <input type="number" id="sff" placeholder="%" step="1" min="0" max="100" oninput="showSFF()">
-        </div>
-        <div class="result-inline" id="sff-result"></div>
-        
-      </div>
-    </div>
-  </section>
+<div class="content">
 
-  <!-- ===== RV PRESSURES ===== -->
-  <section class="tab-panel" id="tab-rv">
-    <div class="panel-header">
-      <h2>Right Ventricular Pressures</h2>
+<section class="tab-panel active" id="tab-rap">
+  <div class="panel-header"><h2>Right Atrial Pressure <span class="abbr">(RAP)</span></h2></div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>IVC Assessment</h3>
+      <div class="formula-top">RAP estimated from IVC diameter and collapsibility</div>
+      <div class="field"><label>IVC diameter</label><select id="ivc-diam" onchange="calcRAP()"><option value="small">≤ 2.1 cm</option><option value="large">&gt; 2.1 cm</option></select></div>
+      <div class="field"><label>Collapse with sniff</label><select id="ivc-collapse" onchange="calcRAP()"><option value="gt50">&gt; 50%</option><option value="lt50">&lt; 50%</option></select></div>
+      <div class="result-box" id="rap-result"></div>
+      <p class="caveat">⚠ Unreliable in ventilated patients, athletes, severe TR</p>
     </div>
-    <div class="grid-2">
-      <div class="card">
-        <h3>RVSP via TR</h3>
-        <div class="formula-top">RVSP = 4(TR V<sub>max</sub>)² + RAP</div>
-        <div class="field">
-          <label>TR peak velocity (m/s)</label>
-          <input type="number" id="tr-vel" placeholder="e.g. 3.3" step="0.1" min="0" oninput="calcRVSP()">
-        </div>
-        <div class="field">
-          <label>RAP (mmHg) <span class="optional">optional</span></label>
-          <input type="number" id="rap-rvsp" placeholder="leave blank to show + RAP" step="1" oninput="calcRVSP()">
-        </div>
-        <div class="result-box" id="rvsp-result" style="display:none"></div>
+    <div class="card">
+      <h3>Hepatic Vein Alternative</h3>
+      <div class="formula-top">SFF = S-VTI / (S-VTI + D-VTI) &nbsp;·&nbsp; SFF &lt; 55% → RAP &gt; 8 mmHg</div>
+      <p class="card-desc">Calculate SFF from wave VTIs or enter directly.</p>
+      <div class="field-row">
+        <div class="field"><label>S-wave VTI (cm)</label><input type="number" id="s-vti" placeholder="cm" step="0.1" min="0" oninput="calcSFF()"></div>
+        <div class="field"><label>D-wave VTI (cm)</label><input type="number" id="d-vti" placeholder="cm" step="0.1" min="0" oninput="calcSFF()"></div>
       </div>
-
-      <div class="card">
-        <h3>RVDP (no VSD)</h3>
-        <div class="formula-top">RVDP = RAP (no tricuspid stenosis)<br>RVDP = RAP − TS gradient</div>
-        <div class="field">
-          <label>RAP (mmHg)</label>
-          <input type="number" id="rap-rvdp" placeholder="mmHg" step="1" oninput="calcRVDP()">
-        </div>
-        <div class="field">
-          <label>TS gradient (mmHg) — if tricuspid stenosis</label>
-          <input type="number" id="ts-grad" placeholder="0 if no TS" step="1" value="0" oninput="calcRVDP()">
-        </div>
-        <div class="result-box" id="rvdp-result" style="display:none"></div>
-      </div>
-
-      <!-- VSD collapsible section -->
-      <div class="card wide">
-        <div class="collapsible-header" onclick="toggleSection('vsd-section', 'vsd-chevron')">
-          <h3 style="margin-bottom:0;border-bottom:none;padding-bottom:0;">Special Situation: RVSP &amp; RVEDP in VSD</h3>
-          <span class="chevron" id="vsd-chevron">▶</span>
-        </div>
-        <div class="collapsible-body" id="vsd-section" style="display:none">
-          <p class="card-desc" style="margin:0.75rem 0;">VSD gradient = LVSP − RVSP. Assumes no LVOT obstruction or aortic valve disease.</p>
-          <div class="formula-top">RVSP = SBP − 4(VSD V<sub>peak</sub>)² &nbsp;·&nbsp; RVEDP = LVEDP − 4(VSD V<sub>diast</sub>)²</div>
-          <div class="grid-2" style="margin-top:1rem;">
-            <div>
-              <h4>RVSP via VSD</h4>
-              <div class="field">
-                <label>Systolic BP (mmHg)</label>
-                <input type="number" id="sbp-vsd" placeholder="e.g. 120" step="1" oninput="calcRVSP_VSD()">
-              </div>
-              <div class="field">
-                <label>VSD peak velocity (m/s)</label>
-                <input type="number" id="vsd-vel" placeholder="e.g. 2.9" step="0.1" oninput="calcRVSP_VSD()">
-              </div>
-              <div class="result-box" id="rvsp-vsd-result" style="display:none"></div>
-            </div>
-            <div>
-              <h4>RVEDP via VSD</h4>
-              <div class="field">
-                <label>LVEDP (mmHg)</label>
-                <input type="number" id="lvedp-rv" placeholder="mmHg" step="1" oninput="calcRVEDP()">
-              </div>
-              <div class="field">
-                <label>VSD diastolic velocity (m/s)</label>
-                <input type="number" id="vsd-diast" placeholder="e.g. 1.0" step="0.1" oninput="calcRVEDP()">
-              </div>
-              <div class="result-box" id="rvedp-result" style="display:none"></div>
-            </div>
-          </div>
-        </div>
-      </div>
+      <div class="field"><label>Systolic Filling Fraction (SFF %)</label><input type="number" id="sff" placeholder="%" step="1" min="0" max="100" oninput="showSFF()"></div>
+      <div id="sff-result" class="result-inline"></div>
     </div>
-  </section>
-
-  <!-- ===== PA PRESSURES ===== -->
-  <section class="tab-panel" id="tab-pa">
-    <div class="panel-header">
-      <h2>Pulmonary Artery Pressures</h2>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <h3>PA Systolic Pressure (PASP)</h3>
-        <div class="formula-top">PASP = 4(TR V<sub>max</sub>)² + RAP (no PS)<br>PASP = RVSP − PS<sub>gradient</sub></div>
-        <div class="field">
-          <label>TR peak velocity (m/s)</label>
-          <input type="number" id="tr-vel-pasp" placeholder="e.g. 3.3" step="0.1" min="0" oninput="calcPASP()">
-        </div>
-        <div class="field">
-          <label>RAP (mmHg) <span class="optional">optional</span></label>
-          <input type="number" id="rap-pasp" placeholder="leave blank to show + RAP" step="1" oninput="calcPASP()">
-        </div>
-        <div class="checkbox-toggle">
-          <label class="toggle-label">
-            <input type="checkbox" id="ps-check" onchange="togglePS()">
-            Pulmonic stenosis present
-          </label>
-        </div>
-        <div id="ps-section" style="display:none">
-          <div class="field" style="margin-top:0.75rem;">
-            <label>PS gradient (mmHg)</label>
-            <input type="number" id="ps-grad" placeholder="mmHg" step="1" oninput="calcPASP()">
-          </div>
-        </div>
-        <div class="result-box" id="pasp-result" style="display:none"></div>
-      </div>
-
-      <div class="card">
-        <h3>PA End-Diastolic Pressure (PAEDP)</h3>
-        <div class="formula-top">PAEDP = 4(PR<sub>end-diastolic velocity</sub>)² + RAP</div>
-        <div class="field">
-          <label>PR end-diastolic velocity (m/s)</label>
-          <input type="number" id="pr-vel" placeholder="e.g. 1.1" step="0.1" oninput="calcPAEDP()">
-        </div>
-        <div class="field">
-          <label>RAP (mmHg)</label>
-          <input type="number" id="rap-paedp" placeholder="mmHg" step="1" oninput="calcPAEDP()">
-        </div>
-        <div class="result-box" id="paedp-result" style="display:none"></div>
-      </div>
-
-      <!-- mPAP full width -->
-      <div class="card wide">
-        <h3>Mean PA Pressure (mPAP) — Four Methods</h3>
-        <div class="grid-4">
-          <div>
-            <h4>Method 1</h4>
-            <div class="formula-top">mPAP = 4(PR<sub>peak</sub>)² + RAP</div>
-            <div class="field">
-              <label>PR peak velocity (m/s)</label>
-              <input type="number" id="pr-peak" placeholder="e.g. 1.5" step="0.1" oninput="calcMPAP()">
-            </div>
-            <div class="field">
-              <label>RAP (mmHg)</label>
-              <input type="number" id="rap-mpap1" placeholder="mmHg" step="1" oninput="calcMPAP()">
-            </div>
-          </div>
-          <div>
-            <h4>Method 2</h4>
-            <div class="formula-top">mPAP = Mean ΔP<sub>(RV-RA)</sub> + RAP</div>
-            <div class="field">
-              <label>Mean gradient CW TR signal (mmHg)</label>
-              <input type="number" id="mean-tr-grad" placeholder="mmHg" step="1" oninput="calcMPAP()">
-            </div>
-            <div class="field">
-              <label>RAP (mmHg)</label>
-              <input type="number" id="rap-mpap2" placeholder="mmHg" step="1" oninput="calcMPAP()">
-            </div>
-          </div>
-          <div>
-            <h4>Method 3</h4>
-            <div class="formula-top">mPAP = 79 − (0.45 × RVOT AcT)</div>
-            <div class="field">
-              <label>RVOT acceleration time (ms)</label>
-              <input type="number" id="rvot-act" placeholder="ms" step="1" oninput="calcMPAP()">
-            </div>
-          </div>
-          <div>
-            <h4>Method 4</h4>
-            <div class="formula-top">mPAP = ⅓PASP + ⅔PADP</div>
-            <div class="field">
-              <label>PASP (mmHg)</label>
-              <input type="number" id="pasp-m4" placeholder="mmHg" step="1" oninput="calcMPAP()">
-            </div>
-            <div class="field">
-              <label>PADP (mmHg)</label>
-              <input type="number" id="padp-m4" placeholder="mmHg" step="1" oninput="calcMPAP()">
-            </div>
-          </div>
-        </div>
-        <div class="mpap-results" id="mpap-result"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== PVR ===== -->
-  <section class="tab-panel" id="tab-pvr">
-    <div class="panel-header">
-      <h2>Pulmonary Vascular Resistance <span class="abbr">(PVR)</span></h2>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <h3>Method 1</h3>
-        <div class="formula-top">PVR = 10 × (TR V<sub>peak systolic</sub> / RVOT VTI) + 0.16</div>
-        <div class="field">
-          <label>TR peak systolic velocity (m/s)</label>
-          <input type="number" id="tr-pvr" placeholder="e.g. 2.9" step="0.1" oninput="calcPVR()">
-        </div>
-        <div class="field">
-          <label>RVOT VTI (cm)</label>
-          <input type="number" id="rvot-vti" placeholder="e.g. 20" step="0.1" oninput="calcPVR()">
-        </div>
-        <div class="result-box" id="pvr-echo-result" style="display:none"></div>
-      </div>
-      <div class="card">
-        <h3>Method 2</h3>
-        <div class="formula-top">PVR = (mPAP − mPCWP) / Cardiac Output</div>
-        <div class="field">
-          <label>Mean PAP (mmHg)</label>
-          <input type="number" id="mpap-pvr" placeholder="mmHg" step="1" oninput="calcPVR2()">
-        </div>
-        <div class="field">
-          <label>Mean PCWP (mmHg)</label>
-          <input type="number" id="pcwp-pvr" placeholder="mmHg" step="1" oninput="calcPVR2()">
-        </div>
-        <div class="field">
-          <label>Cardiac output (L/min)</label>
-          <input type="number" id="co-pvr" placeholder="L/min" step="0.1" oninput="calcPVR2()">
-        </div>
-        <div class="result-box" id="pvr-fick-result" style="display:none"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== LAP ===== -->
-  <section class="tab-panel" id="tab-lap">
-    <div class="panel-header">
-      <h2>Left Atrial Pressure <span class="abbr">(LAP)</span></h2>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <h3>E/e' Method</h3>
-        <div class="formula-top">LAP = E/e' + 4 &nbsp;·&nbsp; LAP = 1.24 × (E/e') + 1.9</div>
-        <div class="field">
-          <label>E velocity (cm/s)</label>
-          <input type="number" id="e-vel" placeholder="cm/s" step="1" oninput="calcLAP()">
-        </div>
-        <div class="field">
-          <label>e' average — (septal + lateral) / 2 (cm/s)</label>
-          <input type="number" id="eprime" placeholder="cm/s" step="0.1" oninput="calcLAP()">
-        </div>
-        <div class="result-box" id="lap-result" style="display:none"></div>
-        <p class="caveat">⚠ Inaccurate in MS, MAC, prosthetic MV, severe MR, severe LV dysfunction, HCM</p>
-      </div>
-      <div class="card">
-        <h3>MR Method</h3>
-        <div class="formula-top">LAP = SBP − 4(MR V<sub>max</sub>)²</div>
-        <div class="field">
-          <label>Systolic BP (mmHg)</label>
-          <input type="number" id="sbp-lap" placeholder="e.g. 120" step="1" oninput="calcLAP2()">
-        </div>
-        <div class="field">
-          <label>MR peak velocity (m/s)</label>
-          <input type="number" id="mr-vel" placeholder="e.g. 5.0" step="0.1" oninput="calcLAP2()">
-        </div>
-        <div class="result-box" id="lap2-result" style="display:none"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== LV PRESSURES ===== -->
-  <section class="tab-panel" id="tab-lv">
-    <div class="panel-header">
-      <h2>Left Ventricular Pressures</h2>
-    </div>
-    <div class="grid-2">
-      <div class="card">
-        <h3>LV Systolic Pressure (LVSP)</h3>
-        <div class="formula-top">LVSP = SBP (no AS) &nbsp;·&nbsp; LVSP = 4(MR V<sub>peak</sub>)² + LAP &nbsp;·&nbsp; LVSP = SBP + AS gradient</div>
-        <div class="field">
-          <label>Systolic BP (mmHg)</label>
-          <input type="number" id="sbp-lv" placeholder="mmHg" step="1" oninput="calcLVSP()">
-        </div>
-        <div class="field">
-          <label>MR peak velocity (m/s) <span class="optional">optional</span></label>
-          <input type="number" id="mr-vel-lv" placeholder="optional" step="0.1" oninput="calcLVSP()">
-        </div>
-        <div class="field">
-          <label>LAP (mmHg) <span class="optional">required for MR method</span></label>
-          <input type="number" id="lap-lvsp" placeholder="optional" step="1" oninput="calcLVSP()">
-        </div>
-        <div class="field">
-          <label>AS / LVOT gradient (mmHg)</label>
-          <input type="number" id="as-grad" placeholder="0 if none" step="1" value="0" oninput="calcLVSP()">
-        </div>
-        <div class="result-box" id="lvsp-result" style="display:none"></div>
-      </div>
-      <div class="card">
-        <h3>LV End-Diastolic Pressure (LVEDP)</h3>
-        <div class="formula-top">LVEDP = DBP − 4(AR<sub>end-diastolic velocity</sub>)²</div>
-        <div class="field">
-          <label>Diastolic BP (mmHg)</label>
-          <input type="number" id="dbp-lv" placeholder="mmHg" step="1" oninput="calcLVEDP()">
-        </div>
-        <div class="field">
-          <label>AR end-diastolic velocity (m/s)</label>
-          <input type="number" id="ar-vel" placeholder="e.g. 3.3" step="0.1" oninput="calcLVEDP()">
-        </div>
-        <div class="result-box" id="lvedp-result" style="display:none"></div>
-        <hr class="divider">
-        <h4 style="margin:1rem 0 0.4rem;">Ar–A Duration Method</h4>
-        <div class="formula-top" style="margin-bottom:0.75rem;">Ar–A &gt; 30 ms → LVEDP &gt; 20 mmHg</div>
-        <div class="field">
-          <label>Ar–A duration (ms)</label>
-          <input type="number" id="ar-a-dur" placeholder="ms" step="1" oninput="calcArA()">
-        </div>
-        <div class="result-inline" id="ara-result"></div>
-        <p class="caveat">Ar measured at MV annulus (limited data when measured from leaflet tips)</p>
-      </div>
-    </div>
-  </section>
-
-  <!-- ===== SUMMARY ===== -->
-  <section class="tab-panel" id="tab-summary">
-    <div class="panel-header">
-      <h2>Hemodynamic Summary</h2>
-      <p>All calculated values — fill in each tab to populate</p>
-    </div>
-    <div class="summary-grid" id="summary-grid"></div>
-    <div class="disclaimer">
-      Please verify accuracy of calculations and inputs. Not responsible for errors.
-    </div>
-  </section>
-</main>
-
-<footer class="site-footer">
-  <div class="footer-inner">
-    <span>Echo Swan &nbsp;·&nbsp; Echocardiographic Pressure Estimation</span>
-    <span>Created by: Akhil Narang, MD</span>
   </div>
+</section>
+
+<section class="tab-panel" id="tab-rv">
+  <div class="panel-header"><h2>Right Ventricular Pressures</h2></div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>RVSP via TR</h3>
+      <div class="formula-top">RVSP = 4(TR V<sub>max</sub>)² + RAP</div>
+      <div class="field"><label>TR peak velocity (m/s)</label><input type="number" id="tr-vel" placeholder="e.g. 3.3" step="0.1" min="0" oninput="calcRVSP()"></div>
+      <div class="field"><label>RAP (mmHg) <span class="optional">optional</span></label><input type="number" id="rap-rvsp" placeholder="leave blank to show + RAP" step="1" oninput="calcRVSP()"></div>
+      <div class="result-box" id="rvsp-result" style="display:none"></div>
+    </div>
+    <div class="card">
+      <h3>RVDP</h3>
+      <div class="formula-top">RVDP = RAP (no TS) &nbsp;·&nbsp; RVDP = RAP − TS gradient</div>
+      <div class="field"><label>RAP (mmHg)</label><input type="number" id="rap-rvdp" placeholder="mmHg" step="1" oninput="calcRVDP()"></div>
+      <div class="field"><label>TS gradient (mmHg) — if tricuspid stenosis</label><input type="number" id="ts-grad" placeholder="0 if no TS" step="1" value="0" oninput="calcRVDP()"></div>
+      <div class="result-box" id="rvdp-result" style="display:none"></div>
+    </div>
+    <div class="card wide">
+      <div class="collapsible-header" onclick="toggleSection('vsd-section','vsd-chevron')">
+        <h3 style="border:none;padding:0;margin:0;">Special Situation: RVSP &amp; RVEDP in VSD</h3>
+        <span class="chevron" id="vsd-chevron">▶</span>
+      </div>
+      <div id="vsd-section" style="display:none;margin-top:14px;">
+        <p class="card-desc">VSD gradient = LVSP − RVSP. Assumes no LVOT obstruction or aortic valve disease.</p>
+        <div class="formula-top">RVSP = SBP − 4(VSD V<sub>peak</sub>)² &nbsp;·&nbsp; RVEDP = LVEDP − 4(VSD V<sub>diast</sub>)²</div>
+        <div class="grid-2" style="margin-top:12px;">
+          <div>
+            <h4>RVSP via VSD</h4>
+            <div class="field"><label>Systolic BP (mmHg)</label><input type="number" id="sbp-vsd" placeholder="e.g. 120" step="1" oninput="calcRVSP_VSD()"></div>
+            <div class="field"><label>VSD peak velocity (m/s)</label><input type="number" id="vsd-vel" placeholder="e.g. 2.9" step="0.1" oninput="calcRVSP_VSD()"></div>
+            <div class="result-box" id="rvsp-vsd-result" style="display:none"></div>
+          </div>
+          <div>
+            <h4>RVEDP via VSD</h4>
+            <div class="field"><label>LVEDP (mmHg)</label><input type="number" id="lvedp-rv" placeholder="mmHg" step="1" oninput="calcRVEDP()"></div>
+            <div class="field"><label>VSD diastolic velocity (m/s)</label><input type="number" id="vsd-diast" placeholder="e.g. 1.0" step="0.1" oninput="calcRVEDP()"></div>
+            <div class="result-box" id="rvedp-result" style="display:none"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-pa">
+  <div class="panel-header"><h2>Pulmonary Artery Pressures</h2></div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>PA Systolic Pressure (PASP)</h3>
+      <div class="formula-top">PASP = 4(TR V<sub>max</sub>)² + RAP (no PS)<br>PASP = RVSP − PS<sub>gradient</sub></div>
+      <div class="field"><label>TR peak velocity (m/s)</label><input type="number" id="tr-vel-pasp" placeholder="e.g. 3.3" step="0.1" min="0" oninput="calcPASP()"></div>
+      <div class="field"><label>RAP (mmHg) <span class="optional">optional</span></label><input type="number" id="rap-pasp" placeholder="leave blank to show + RAP" step="1" oninput="calcPASP()"></div>
+      <div class="checkbox-toggle"><label class="toggle-label"><input type="checkbox" id="ps-check" onchange="togglePS()"> Pulmonic stenosis present</label></div>
+      <div id="ps-section" style="display:none;margin-top:8px;"><div class="field"><label>PS gradient (mmHg)</label><input type="number" id="ps-grad" placeholder="mmHg" step="1" oninput="calcPASP()"></div></div>
+      <div class="result-box" id="pasp-result" style="display:none"></div>
+    </div>
+    <div class="card">
+      <h3>PA End-Diastolic Pressure (PAEDP)</h3>
+      <div class="formula-top">PAEDP = 4(PR<sub>end-diastolic velocity</sub>)² + RAP</div>
+      <div class="field"><label>PR end-diastolic velocity (m/s)</label><input type="number" id="pr-vel" placeholder="e.g. 1.2" step="0.1" min="0" oninput="calcPAEDP()"></div>
+      <div class="field"><label>RAP (mmHg)</label><input type="number" id="rap-paedp" placeholder="mmHg" step="1" oninput="calcPAEDP()"></div>
+      <div class="result-box" id="paedp-result" style="display:none"></div>
+    </div>
+    <div class="card wide">
+      <h3>Mean PA Pressure (mPAP) — Four Methods</h3>
+      <div class="grid-2">
+        <div>
+          <h4>Method 1 — PR peak velocity</h4>
+          <div class="formula-top">mPAP = 4(PR peak)² + RAP</div>
+          <div class="field-row">
+            <div class="field"><label>PR peak velocity (m/s)</label><input type="number" id="pr-peak" placeholder="m/s" step="0.1" oninput="calcMPAP()"></div>
+            <div class="field"><label>RAP (mmHg)</label><input type="number" id="rap-mpap1" placeholder="mmHg" step="1" oninput="calcMPAP()"></div>
+          </div>
+        </div>
+        <div>
+          <h4>Method 2 — Mean TR gradient</h4>
+          <div class="formula-top">mPAP = Mean ΔP<sub>(RV-RA)</sub> + RAP</div>
+          <div class="field-row">
+            <div class="field"><label>Mean TR gradient (mmHg)</label><input type="number" id="mean-tr-grad" placeholder="mmHg" step="1" oninput="calcMPAP()"></div>
+            <div class="field"><label>RAP (mmHg)</label><input type="number" id="rap-mpap2" placeholder="mmHg" step="1" oninput="calcMPAP()"></div>
+          </div>
+        </div>
+        <div>
+          <h4>Method 3 — RVOT AcT</h4>
+          <div class="formula-top">mPAP = 79 − (0.45 × RVOT AcT)</div>
+          <div class="field"><label>RVOT acceleration time (ms)</label><input type="number" id="rvot-act" placeholder="ms" step="1" oninput="calcMPAP()"></div>
+        </div>
+        <div>
+          <h4>Method 4 — PASP + PADP</h4>
+          <div class="formula-top">mPAP = ⅓PASP + ⅔PADP</div>
+          <div class="field-row">
+            <div class="field"><label>PASP (mmHg)</label><input type="number" id="pasp-m4" placeholder="mmHg" step="1" oninput="calcMPAP()"></div>
+            <div class="field"><label>PADP (mmHg)</label><input type="number" id="padp-m4" placeholder="mmHg" step="1" oninput="calcMPAP()"></div>
+          </div>
+        </div>
+      </div>
+      <div id="mpap-result"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-pvr">
+  <div class="panel-header"><h2>Pulmonary Vascular Resistance <span class="abbr">(PVR)</span></h2></div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>Echo Method <span class="method-badge">Abbas 2003</span></h3>
+      <div class="formula-top">PVR = 10 × (TR V<sub>peak</sub> / RVOT VTI) + 0.16</div>
+      <div class="field"><label>TR peak systolic velocity (m/s)</label><input type="number" id="tr-pvr" placeholder="e.g. 2.9" step="0.1" oninput="calcPVR()"></div>
+      <div class="field"><label>RVOT VTI (cm)</label><input type="number" id="rvot-vti" placeholder="e.g. 20" step="0.1" oninput="calcPVR()"></div>
+      <div class="result-box" id="pvr-echo-result" style="display:none"></div>
+    </div>
+    <div class="card">
+      <h3>Hemodynamic Method</h3>
+      <div class="formula-top">PVR = (mPAP − mPCWP) / Cardiac Output</div>
+      <div class="field"><label>Mean PAP (mmHg)</label><input type="number" id="mpap-pvr" placeholder="mmHg" step="1" oninput="calcPVR2()"></div>
+      <div class="field"><label>Mean PCWP (mmHg)</label><input type="number" id="pcwp-pvr" placeholder="mmHg" step="1" oninput="calcPVR2()"></div>
+      <div class="field"><label>Cardiac output (L/min)</label><input type="number" id="co-pvr" placeholder="L/min" step="0.1" oninput="calcPVR2()"></div>
+      <div class="result-box" id="pvr-fick-result" style="display:none"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-lap">
+  <div class="panel-header"><h2>Left Atrial Pressure <span class="abbr">(LAP)</span></h2></div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>E/e' Method</h3>
+      <div class="formula-top">LAP = E/e' + 4 &nbsp;·&nbsp; LAP = 1.24 × (E/e') + 1.9</div>
+      <div class="field"><label>E velocity (cm/s)</label><input type="number" id="e-vel" placeholder="cm/s" step="1" oninput="calcLAP()"></div>
+      <div class="field"><label>e' average — (septal + lateral) / 2 (cm/s)</label><input type="number" id="eprime" placeholder="cm/s" step="0.1" oninput="calcLAP()"></div>
+      <div class="result-box" id="lap-result" style="display:none"></div>
+      <p class="caveat">⚠ Inaccurate in MS, MAC, prosthetic MV, severe MR, severe LV dysfunction, HCM</p>
+    </div>
+    <div class="card">
+      <h3>MR Method</h3>
+      <div class="formula-top">LAP = SBP − 4(MR V<sub>max</sub>)²</div>
+      <div class="field"><label>Systolic BP (mmHg)</label><input type="number" id="sbp-lap" placeholder="e.g. 120" step="1" oninput="calcLAP2()"></div>
+      <div class="field"><label>MR peak velocity (m/s)</label><input type="number" id="mr-vel" placeholder="e.g. 5.0" step="0.1" oninput="calcLAP2()"></div>
+      <div class="result-box" id="lap2-result" style="display:none"></div>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-lv">
+  <div class="panel-header"><h2>Left Ventricular Pressures</h2></div>
+  <div class="grid-2">
+    <div class="card">
+      <h3>LV Systolic Pressure (LVSP)</h3>
+      <div class="formula-top">LVSP = SBP (no AS) &nbsp;·&nbsp; LVSP = 4(MR V<sub>peak</sub>)² + LAP &nbsp;·&nbsp; LVSP = SBP + AS gradient</div>
+      <div class="field"><label>Systolic BP (mmHg)</label><input type="number" id="sbp-lv" placeholder="mmHg" step="1" oninput="calcLVSP()"></div>
+      <div class="field"><label>MR peak velocity (m/s) <span class="optional">optional</span></label><input type="number" id="mr-vel-lv" placeholder="optional" step="0.1" oninput="calcLVSP()"></div>
+      <div class="field"><label>LAP (mmHg) <span class="optional">required for MR method</span></label><input type="number" id="lap-lvsp" placeholder="optional" step="1" oninput="calcLVSP()"></div>
+      <div class="field"><label>AS / LVOT gradient (mmHg)</label><input type="number" id="as-grad" placeholder="0 if none" step="1" value="0" oninput="calcLVSP()"></div>
+      <div class="result-box" id="lvsp-result" style="display:none"></div>
+    </div>
+    <div class="card">
+      <h3>LV End-Diastolic Pressure (LVEDP)</h3>
+      <div class="formula-top">LVEDP = DBP − 4(AR<sub>end-diastolic velocity</sub>)²</div>
+      <div class="field"><label>Diastolic BP (mmHg)</label><input type="number" id="dbp-lv" placeholder="mmHg" step="1" oninput="calcLVEDP()"></div>
+      <div class="field"><label>AR end-diastolic velocity (m/s)</label><input type="number" id="ar-vel" placeholder="e.g. 3.3" step="0.1" oninput="calcLVEDP()"></div>
+      <div class="result-box" id="lvedp-result" style="display:none"></div>
+      <hr class="divider">
+      <h4>Ar–A Duration Method</h4>
+      <div class="formula-top">Ar–A &gt; 30 ms → LVEDP &gt; 20 mmHg</div>
+      <div class="field"><label>Ar–A duration (ms)</label><input type="number" id="ar-a-dur" placeholder="ms" step="1" oninput="calcArA()"></div>
+      <div id="ara-result" class="result-inline"></div>
+      <p class="caveat">Ar measured at MV annulus (limited data when measured from leaflet tips)</p>
+    </div>
+  </div>
+</section>
+
+<section class="tab-panel" id="tab-summary">
+  <div class="panel-header"><h2>Hemodynamic Summary</h2><p>All calculated values — fill in each tab to populate</p></div>
+  <div class="summary-grid" id="summary-grid"></div>
+  <div class="disclaimer">⚠️ These are echocardiographic <em>estimates</em> based on simplified Bernoulli equations. Right heart catheterization remains the gold standard. Please verify accuracy of all inputs. Not responsible for errors.</div>
+</section>
+
+<div class="disclaimer">
+  ⚠️ <strong>Clinical Disclaimer:</strong> This tool is an educational and computational aid for trained echocardiographers. Not a substitute for individual clinical judgment.
+</div>
+</div>
+
+<footer>
+  Echo Swan &nbsp;·&nbsp; akhilnarangmd.github.io &nbsp;·&nbsp; Echocardiographic Intracardiac Pressure Estimation &nbsp;·&nbsp; Created by Akhil Narang, MD
 </footer>
 
-<script src="app.js"></script>
+<script>
+const stored={rap:null,rvsp:null,rvedp:null,pasp:null,paedp:null,mpap:null,pvr:null,lap:null,lvsp:null,lvedp:null};
+
+document.getElementById('tabNav').addEventListener('click',e=>{
+  const btn=e.target.closest('.tab-btn');if(!btn)return;
+  const tabId=btn.dataset.tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+tabId).classList.add('active');
+  if(tabId==='summary')updateSummary();
+});
+
+function toggleSection(bodyId,chevronId){const body=document.getElementById(bodyId),chev=document.getElementById(chevronId),isOpen=body.style.display!=='none';body.style.display=isOpen?'none':'block';chev.classList.toggle('open',!isOpen);}
+function togglePS(){const checked=document.getElementById('ps-check').checked;document.getElementById('ps-section').style.display=checked?'block':'none';calcPASP();}
+
+function fmt(val,decimals=1){if(val===null||isNaN(val))return'—';return Number(val).toFixed(decimals);}
+
+function showResult(elId,{label,value,unit,formula,statusClass}={}){
+  const el=document.getElementById(elId);if(!el)return;
+  el.style.display='';
+  el.className='result-box'+(statusClass?' '+statusClass:'');
+  el.innerHTML=`<div class="result-label">${label||''}</div><div><span class="result-value">${value}</span><span class="result-unit">${unit||''}</span></div>${formula?`<div class="result-formula">${formula}</div>`:''}`;
+}
+
+function hideResult(elId){const el=document.getElementById(elId);if(el)el.style.display='none';}
+function pvrStatus(val){if(val<2)return{cls:'normal',label:'Normal (< 2 WU)'};if(val<3)return{cls:'borderline',label:'Borderline (2–3 WU)'};return{cls:'elevated',label:'Elevated (≥ 3 WU)'};}
+
+function calcRAP(){
+  const diam=document.getElementById('ivc-diam').value,collapse=document.getElementById('ivc-collapse').value;
+  let rap,label,range,statusClass;
+  if(diam==='small'&&collapse==='gt50'){rap=3;label='Normal RAP';range='(0–5 mmHg)';statusClass='normal';}
+  else if(diam==='large'&&collapse==='lt50'){rap=15;label='Elevated RAP';range='(10–20 mmHg)';statusClass='elevated';}
+  else{rap=8;label='Intermediate RAP';range='(5–10 mmHg)';statusClass='intermediate';}
+  stored.rap=rap;
+  const el=document.getElementById('rap-result');el.style.display='';el.className='result-box '+statusClass;
+  el.innerHTML=`<div class="result-label">${label} ${range}</div><div><span class="result-value">${rap}</span><span class="result-unit">mmHg (estimated)</span></div><div class="result-formula">IVC ${diam==='small'?'≤ 2.1 cm':'> 2.1 cm'} · Collapse ${collapse==='gt50'?'> 50%':'< 50%'} · Kircher 1990</div>`;
+}
+
+function calcSFF(){const s=parseFloat(document.getElementById('s-vti').value),d=parseFloat(document.getElementById('d-vti').value);if(!isNaN(s)&&!isNaN(d)&&(s+d)>0){document.getElementById('sff').value=((s/(s+d))*100).toFixed(1);showSFF();}}
+function showSFF(){const sff=parseFloat(document.getElementById('sff').value),el=document.getElementById('sff-result');if(isNaN(sff)){el.innerHTML='';el.className='result-inline';return;}el.className=sff<55?'result-inline elevated':'result-inline normal';el.textContent=sff<55?`SFF ${sff.toFixed(1)}% — RAP likely > 8 mmHg`:`SFF ${sff.toFixed(1)}% — RAP likely normal`;}
+
+function calcRVSP(){
+  const v=parseFloat(document.getElementById('tr-vel').value),rap=parseFloat(document.getElementById('rap-rvsp').value);
+  if(isNaN(v)){hideResult('rvsp-result');return;}
+  const gradient=+(4*v*v).toFixed(1);
+  if(isNaN(rap)){stored.rvsp=null;showResult('rvsp-result',{label:'RVSP (RAP not entered)',value:gradient,unit:'+ RAP  mmHg',formula:`4 × ${v}² = ${gradient} + RAP`});}
+  else{const val=gradient+rap;stored.rvsp=val;showResult('rvsp-result',{label:'RV Systolic Pressure',value:fmt(val),unit:'mmHg',formula:`4 × ${v}² + ${rap} = ${fmt(val)}`});}
+}
+
+function calcRVSP_VSD(){const sbp=parseFloat(document.getElementById('sbp-vsd').value),v=parseFloat(document.getElementById('vsd-vel').value);if(isNaN(sbp)||isNaN(v)){hideResult('rvsp-vsd-result');return;}const val=sbp-4*v*v;showResult('rvsp-vsd-result',{label:'RVSP via VSD',value:fmt(val),unit:'mmHg',formula:`${sbp} − 4×${v}² = ${fmt(val)}`});if(!stored.rvsp)stored.rvsp=val;}
+function calcRVEDP(){const lvedp=parseFloat(document.getElementById('lvedp-rv').value),v=parseFloat(document.getElementById('vsd-diast').value);if(isNaN(lvedp)||isNaN(v)){hideResult('rvedp-result');return;}const val=lvedp-4*v*v;stored.rvedp=val;showResult('rvedp-result',{label:'RV End-Diastolic Pressure',value:fmt(val),unit:'mmHg',formula:`${lvedp} − 4×${v}² = ${fmt(val)}`});}
+function calcRVDP(){const rap=parseFloat(document.getElementById('rap-rvdp').value),ts=parseFloat(document.getElementById('ts-grad').value)||0;if(isNaN(rap)){hideResult('rvdp-result');return;}const val=rap-ts;showResult('rvdp-result',{label:'RV Diastolic Pressure',value:fmt(val),unit:'mmHg',formula:ts>0?`${rap} − ${ts} = ${fmt(val)}`:`= RAP = ${fmt(val)}`});}
+
+function calcPASP(){
+  const v=parseFloat(document.getElementById('tr-vel-pasp').value),rap=parseFloat(document.getElementById('rap-pasp').value);
+  const psCheck=document.getElementById('ps-check').checked,ps=psCheck?(parseFloat(document.getElementById('ps-grad').value)||0):0;
+  if(isNaN(v)){hideResult('pasp-result');return;}
+  const rvsp=4*v*v;
+  if(isNaN(rap)){const partial=+(rvsp-ps).toFixed(1);stored.pasp=null;showResult('pasp-result',{label:'PASP (RAP not entered)',value:fmt(partial),unit:'+ RAP  mmHg',formula:psCheck?`4×${v}² − PS(${ps}) = ${fmt(partial)} + RAP`:`4×${v}² = ${fmt(partial)} + RAP`});}
+  else{const val=rvsp+rap-ps;stored.pasp=val;showResult('pasp-result',{label:'PA Systolic Pressure',value:fmt(val),unit:'mmHg',formula:psCheck?`4×${v}² + RAP(${rap}) − PS(${ps}) = ${fmt(val)}`:`4×${v}² + RAP(${rap}) = ${fmt(val)}`});}
+}
+
+function calcPAEDP(){const v=parseFloat(document.getElementById('pr-vel').value),rap=parseFloat(document.getElementById('rap-paedp').value);if(isNaN(v)||isNaN(rap)){hideResult('paedp-result');return;}const val=4*v*v+rap;stored.paedp=val;showResult('paedp-result',{label:'PA End-Diastolic Pressure',value:fmt(val),unit:'mmHg',formula:`4×${v}² + ${rap} = ${fmt(val)}`});}
+
+function calcMPAP(){
+  const prPeak=parseFloat(document.getElementById('pr-peak').value),rap1=parseFloat(document.getElementById('rap-mpap1').value);
+  const meanTR=parseFloat(document.getElementById('mean-tr-grad').value),rap2=parseFloat(document.getElementById('rap-mpap2').value);
+  const act=parseFloat(document.getElementById('rvot-act').value);
+  const pasp=parseFloat(document.getElementById('pasp-m4').value),padp=parseFloat(document.getElementById('padp-m4').value);
+  const el=document.getElementById('mpap-result'),cards=[];let first=null;
+  if(!isNaN(prPeak)&&!isNaN(rap1)){const v=4*prPeak*prPeak+rap1;if(first===null)first=v;cards.push({label:'Method 1: 4(PR peak)² + RAP',val:v});}
+  if(!isNaN(meanTR)&&!isNaN(rap2)){const v=meanTR+rap2;if(first===null)first=v;cards.push({label:'Method 2: Mean ΔP(RV-RA) + RAP',val:v});}
+  if(!isNaN(act)){const v=79-0.45*act;if(first===null)first=v;cards.push({label:'Method 3: 79 − 0.45×AcT',val:v});}
+  if(!isNaN(pasp)&&!isNaN(padp)){const v=pasp/3+(padp*2)/3;if(first===null)first=v;cards.push({label:'Method 4: ⅓PASP + ⅔PADP',val:v});}
+  stored.mpap=first;
+  if(cards.length===0){el.innerHTML='';return;}
+  el.className='mpap-results';
+  el.innerHTML=cards.map(c=>`<div class="mpap-card"><div class="m-label">${c.label}</div><div class="m-val">${fmt(c.val)}</div><div class="m-unit">mmHg</div></div>`).join('');
+}
+
+function calcPVR(){
+  const tr=parseFloat(document.getElementById('tr-pvr').value),vti=parseFloat(document.getElementById('rvot-vti').value);
+  if(isNaN(tr)||isNaN(vti)||vti===0){hideResult('pvr-echo-result');return;}
+  const val=10*(tr/vti)+0.16;stored.pvr=val;const{cls,label}=pvrStatus(val);
+  const el=document.getElementById('pvr-echo-result');el.style.display='';el.className='result-box';
+  el.innerHTML=`<div class="result-label">PVR — Echo Method (Abbas 2003)</div><div><span class="result-value">${fmt(val,2)}</span><span class="result-unit">Wood units</span></div><div><span class="pvr-badge ${cls}">${label}</span></div><div class="result-formula">10 × (${tr} / ${vti}) + 0.16 = ${fmt(val,2)} WU</div>`;
+}
+
+function calcPVR2(){
+  const mpap=parseFloat(document.getElementById('mpap-pvr').value),pcwp=parseFloat(document.getElementById('pcwp-pvr').value),co=parseFloat(document.getElementById('co-pvr').value);
+  if(isNaN(mpap)||isNaN(pcwp)||isNaN(co)||co===0){hideResult('pvr-fick-result');return;}
+  const val=(mpap-pcwp)/co;if(!stored.pvr)stored.pvr=val;const{cls,label}=pvrStatus(val);
+  const el=document.getElementById('pvr-fick-result');el.style.display='';el.className='result-box';
+  el.innerHTML=`<div class="result-label">PVR — Hemodynamic Method</div><div><span class="result-value">${fmt(val,2)}</span><span class="result-unit">Wood units</span></div><div><span class="pvr-badge ${cls}">${label}</span></div><div class="result-formula">(${mpap} − ${pcwp}) / ${co} = ${fmt(val,2)} WU</div>`;
+}
+
+function calcLAP(){
+  const e=parseFloat(document.getElementById('e-vel').value),ep=parseFloat(document.getElementById('eprime').value);
+  if(isNaN(e)||isNaN(ep)||ep===0){hideResult('lap-result');return;}
+  const ratio=e/ep,m1=ratio+4,m2=1.24*ratio+1.9;stored.lap=m1;
+  const el=document.getElementById('lap-result');el.style.display='';el.className='result-box';
+  el.innerHTML=`<div class="result-label">Left Atrial Pressure — E/e' = ${ratio.toFixed(1)}</div><div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-top:0.4rem;"><div><div style="font-size:0.7rem;color:#718096;">E/e' + 4</div><span class="result-value">${fmt(m1)}</span><span class="result-unit">mmHg</span></div><div><div style="font-size:0.7rem;color:#718096;">1.24×(E/e') + 1.9</div><span class="result-value">${fmt(m2)}</span><span class="result-unit">mmHg</span></div></div>`;
+}
+
+function calcLAP2(){const sbp=parseFloat(document.getElementById('sbp-lap').value),mr=parseFloat(document.getElementById('mr-vel').value);if(isNaN(sbp)||isNaN(mr)){hideResult('lap2-result');return;}const val=sbp-4*mr*mr;if(!stored.lap)stored.lap=val;showResult('lap2-result',{label:'LAP via MR',value:fmt(val),unit:'mmHg',formula:`${sbp} − 4×${mr}² = ${fmt(val)}`});}
+
+function calcLVSP(){
+  const sbp=parseFloat(document.getElementById('sbp-lv').value),mr=parseFloat(document.getElementById('mr-vel-lv').value);
+  const lap=parseFloat(document.getElementById('lap-lvsp').value),asGrad=parseFloat(document.getElementById('as-grad').value)||0;
+  const el=document.getElementById('lvsp-result'),methods=[];
+  if(!isNaN(sbp)){const v=sbp+asGrad;methods.push({label:asGrad>0?'BP + AS gradient':'From BP (no AS)',val:v});}
+  if(!isNaN(mr)&&!isNaN(lap)){const v=4*mr*mr+lap;methods.push({label:'4(MR V<sub>peak</sub>)² + LAP',val:v});}
+  if(methods.length===0){el.style.display='none';return;}
+  stored.lvsp=methods[0].val;el.style.display='';el.className='result-box';
+  el.innerHTML=`<div class="result-label">LV Systolic Pressure</div><div style="display:grid;grid-template-columns:${methods.length>1?'1fr 1fr':'1fr'};gap:0.5rem;margin-top:0.4rem;">${methods.map(m=>`<div><div style="font-size:0.7rem;color:#718096;">${m.label}</div><span class="result-value">${fmt(m.val)}</span><span class="result-unit">mmHg</span></div>`).join('')}</div>`;
+}
+
+function calcLVEDP(){const dbp=parseFloat(document.getElementById('dbp-lv').value),ar=parseFloat(document.getElementById('ar-vel').value);if(isNaN(dbp)||isNaN(ar)){hideResult('lvedp-result');return;}const val=dbp-4*ar*ar;stored.lvedp=val;showResult('lvedp-result',{label:'LV End-Diastolic Pressure',value:fmt(val),unit:'mmHg',formula:`${dbp} − 4×${ar}² = ${fmt(val)}`});}
+
+function calcArA(){const dur=parseFloat(document.getElementById('ar-a-dur').value),el=document.getElementById('ara-result');if(isNaN(dur)){el.innerHTML='';el.className='result-inline';return;}el.className=dur>30?'result-inline elevated':'result-inline normal';el.textContent=dur>30?`Ar–A ${dur} ms — LVEDP likely > 20 mmHg`:`Ar–A ${dur} ms — LVEDP likely ≤ 20 mmHg`;}
+
+function updateSummary(){
+  const items=[{key:'rap',label:'RAP',unit:'mmHg'},{key:'rvsp',label:'RVSP',unit:'mmHg'},{key:'rvedp',label:'RVEDP',unit:'mmHg'},{key:'pasp',label:'PASP',unit:'mmHg'},{key:'paedp',label:'PAEDP',unit:'mmHg'},{key:'mpap',label:'mPAP',unit:'mmHg'},{key:'pvr',label:'PVR',unit:'WU'},{key:'lap',label:'LAP',unit:'mmHg'},{key:'lvsp',label:'LVSP',unit:'mmHg'},{key:'lvedp',label:'LVEDP',unit:'mmHg'}];
+  document.getElementById('summary-grid').innerHTML=items.map(item=>{const val=stored[item.key],hasVal=val!==null&&!isNaN(val),display=hasVal?fmt(val,item.key==='pvr'?2:1):'—';return`<div class="summary-card"><div class="s-label">${item.label}</div><div class="s-val ${hasVal?'filled':'empty'}">${display}</div><div class="s-unit">${item.unit}</div></div>`;}).join('');
+}
+
+calcRAP();
+</script>
 </body>
 </html>
